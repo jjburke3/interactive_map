@@ -1,0 +1,72 @@
+.select-main {
+	width: 100%;
+}
+
+
+.selected2 {
+	background-color: yellow;
+}
+
+.sorting_1 {
+	pointer-events: none;
+}
+
+svg text.title {
+	text-anchor: middle;
+	text-align: center;
+	font-size: 2vh;
+}
+
+table {
+	font-size: .75vw;
+}
+
+
+#xx {
+	text-decoration:none;
+	color:#000;
+	background-color:#ddd;
+	border:1px solid #ccc;
+	padding:8px;
+}
+
+
+
+div.tooltip {
+        position: absolute;
+        width: auto;
+        height: auto;
+        padding: 10px;
+		padding-left: 25px;
+        background-color: beige;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+}
+
+div.tooltip p {
+	margin: 0px;
+}
+
+div.tooltip th,td {
+	padding: .1vw;
+}
+
+.axis.main {
+	font-size: 1.vh;
+}
+
+
+
+.overlay {
+	fill: none;
+	pointer-events: all;
+}
+
+.sorting_1 {
+	pointer-events: all;
+}

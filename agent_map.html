@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+	<head>
+		<title>Call Plan</title>
+		<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script src="//maps.google.com/maps/api/js?key=AIzaSyAEzPa6JQe9jpdO1XY3oocY8a3GtMtvdv0"></script>
+		<script src="javascript/star_function.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/call_plan.css">
+		
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+		<link href="css/simple-sidebar.css" rel="stylesheet">
+		<style>
+			#agentOptions {
+				position: fixed; 
+				right: 2vw; 
+				top: 2vh;
+				height: 20vh;
+				width: 15vw;
+			}
+		</style>
+	</head>
+	<body>
+	
+		<div id= "page-content-wrapper">
+			<div id="map"></div>
+			
+			<div id="tooltip" class="hidden">
+				<p><span id="value">100</span></p>
+			</div>
+			<div id="agentOptions">
+				<select id="select-state" class="form-control">
+					<option value="" disabled>State</option>
+					<option value="FL">Florida</option>
+					<option value="TX">Texas</option>
+				</select>
+				<select id="select-rep" class="form-control">
+					<option class="permanent" value="" disabled>Marketing Rep</option>
+					<option class="permanent" value="">All</option>
+				</select>
+				<select id="select-class" class="form-control">
+					<option value="" disabled>Agent Class</option>
+					<option value="">All</option>
+					<option value="III">III</option>
+					<option value="II">II</option>
+					<option value="I">I</option>
+				</select>
+			</div>
+		</div>
+		<script>
+		d3.csv("data/agent_reps.csv", function(error, data) {
+			var options = d3.select("#select-rep").selectAll("option:not(.permanent)")
+				.data(data);
+			options.enter().append("option")
+				.attr("value",function(d) {return d.rep;})
+				.text(function(d) {return d.rep;});
+			options
+				.attr("value",function(d) {return d.rep;})
+				.text(function(d) {return d.rep;});
+			options.exit().remove();
+		
+		});
+		d3.selectAll("select").on("change",runData);
+		runData();
+function runData() {
+	var color = d3.scale.category10();
+	var stateSelect = d3.select("#select-state").property("value");
+	var repSelect = d3.select("#select-rep").property("value");
+	var classSelect = d3.select("#select-class").property("value");
+	
+
+		
+	d3.select("#map").select("*").remove();
+		var map = new google.maps.Map(d3.select("#map").node(), {
+			zoom: stateSelect=="FL"?7:6,
+			center: new google.maps.LatLng(stateSelect=="FL"?28.270379:30.886503, stateSelect=="FL"?-81.585017:-98.538757),
+			mapTypeId: google.maps.MapTypeId.TERRAIN
+		});
+// Load the station data. When the data comes back, create an overlay.
+d3.csv("data/agents.csv", function(data) {
+
+
+	data = data.filter(function(d) {return d.state == stateSelect && 
+		(d.rep == repSelect || repSelect == "") && 
+		(d.class == classSelect || classSelect == "")});
+  // fit the map to the boundaries of all available data points and
+  // ONCE generate google LatLng objects to be re-used repeatedly
+  var bounds = new google.maps.LatLngBounds();
+  data.forEach(function(d){
+    bounds.extend(d.lat_lng = new google.maps.LatLng(+d.lat, +d.long));
+  });
+  data.forEach(function(d){
+    d.lat_lng = new google.maps.LatLng(+d.lat, +d.long);
+  });
+  
+		
+			var homes = [{"rep":"Bob", "lat":25.631857, "long":-80.335449},
+			{"rep":"Diane", "lat":25.709792, "long":-80.360845},
+			{"rep":"Carter", "lat":25.967066, "long":-80.137544},
+			{"rep":"Jason", "lat":28.513312, "long":-81.159587},
+			{"rep":"Marie", "lat":28.977040, "long":-82.773580},
+			{"rep":"Kyle", "lat":27.177040, "long":-81.873580},
+			{"rep":"Anna", "lat":30.777040, "long":-84.773580}];
+		
+		
+		
+		homes = homes.filter(function(d) {return repSelect == "" || repSelect == d.rep;});
+		homes.forEach(function(d) {
+			bounds.extend(d.lat_lng = new google.maps.LatLng(+d.lat, +d.long));
+		});
+  
+  map.fitBounds(bounds);
+
+  var overlay = new google.maps.OverlayView(),
+      r = 4.5,
+      padding = r*2;
+  // Add the container when the overlay is added to the map.
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayMouseTarget)
+        .append("svg")
+        .attr('class','stations');
+    overlay.draw = function(){
+      var projection = this.getProjection(),
+          sw = projection.fromLatLngToDivPixel(bounds.getSouthWest()),
+          ne = projection.fromLatLngToDivPixel(bounds.getNorthEast());
+      // extend the boundaries so that markers on the edge aren't cut in half
+      sw.x -= padding;
+      sw.y += padding;
+      ne.x += padding;
+      ne.y -= padding;
+
+      d3.select('.stations')
+        .attr('width',(ne.x - sw.x) + 'px')
+        .attr('height',(sw.y - ne.y) + 'px')
+        .style('position','absolute')
+        .style('left',sw.x+'px')
+        .style('top',ne.y+'px');
+
+			
+		
+		var marker_all_agents = layer.selectAll('.marker.allagents')
+        .data(data)
+        .each(transform)
+      .enter().append('circle')
+		.style("fill",function(d) {return color(d.rep);})
+        .attr('class','marker allagents')
+        .attr('r',3)
+        .attr('cx',function(d) {
+          d = projection.fromLatLngToDivPixel(d.lat_lng);
+          return d.x-sw.x;
+        })
+        .attr('cy',function(d) {
+          d = projection.fromLatLngToDivPixel(d.lat_lng);
+          return d.y-ne.y;
+        })
+        .on("mousemove",function(d) {
+			var sel = d3.select(this);
+			var self = d.title;
+			var mouse = d3.mouse(d3.select("#map").node()).map( function(d) {return parseInt(d);});
+			d3.select("#tooltip")
+				.style("left",mouse[0]+"px")
+				.style("top",mouse[1]+"px")
+				
+				.classed("hidden",false)
+				.select("p").html(
+					"Agent Name: " + d.agent + "<br>" +
+					"Agent Rep: " + d.rep + "<br>" +
+					"Class: " + d.class + "<br>" +
+					"Sales: " + d.sales + "<br>"
+				);
+		})
+		.on("mouseout",function() {
+			d3.select("#tooltip")
+				.classed("hidden",true);
+				
+		});
+		
+
+	
+		
+		
+		var marker_home_base = layer.selectAll('.home')
+		.data(homes)
+		.each(transform3)
+		.enter().append("svg:polygon")
+		.style("fill",function(d) {return color(d.rep);})
+		.attr("class","home marker")
+		.attr("visibility","visible")
+		.attr("points",function(d) {
+			
+          d = projection.fromLatLngToDivPixel(d.lat_lng);
+			return CalculateStarPoints(d.x-sw.x,d.y-ne.y,5,9,5);
+			})
+			.on("mousemove",function(d) {
+			var sel = d3.select(this);
+			var self = d.title;
+			var mouse = d3.mouse(d3.select("#map").node()).map( function(d) {return parseInt(d);});
+			d3.select("#tooltip")
+				.style("left",mouse[0]+"px")
+				.style("top",mouse[1]+"px")
+				
+				.classed("hidden",false)
+				.select("p").html(
+					d.rep + " Home"
+				);
+		})
+		.on("mouseout",function() {
+			d3.select("#tooltip")
+				.classed("hidden",true);
+				
+		});;
+		
+		
+		
+      function transform(d) {
+        d = projection.fromLatLngToDivPixel(d.lat_lng);
+        return d3.select(this)
+          .attr('cx',d.x-sw.x)
+          .attr('cy',d.y-ne.y);
+      }
+	  
+	  function transform2(d) {
+        d = projection.fromLatLngToDivPixel(d.lat_lng);
+        return d3.select(this)
+          .attr('x',d.x-sw.x - r)
+          .attr('y',d.y-ne.y - r);
+      }
+	  
+	   function transform3(d) {
+        d = projection.fromLatLngToDivPixel(d.lat_lng);
+        return d3.select(this)
+          .attr("points",CalculateStarPoints(d.x-sw.x,d.y-ne.y,5,9,5));
+      }
+    };
+  };
+
+  // Bind our overlay to the map…
+  overlay.setMap(map);
+});
+}
+		</script>
+	</body>
+</html>
