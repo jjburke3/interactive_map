@@ -18,6 +18,6 @@ Drop downs in the top right corner allow you to filter the displayed agents/reps
 
 * [d3.js](https://d3js.org/) - Javascript Library for Manipulating Data
 * [Bootstrap](https://getbootstrap.com/) - Frontend Webframe Work
-* [Google Maps API] (https://developers.google.com/maps/) - API for drawing google maps
+* [Google Maps API](https://developers.google.com/maps/) - API for drawing google maps
 
 
