@@ -1,5 +1,7 @@
 # Interactive Google Map with Overlay
 
+[Link](https://htmlpreview.github.io/?https://github.com/jjburke3/interactive_map/blob/master/agent_map.html)
+
 This map was created to show locations of agents and agent marketing reps.  It was been changed from its original version, which pulled from a SQL database, to include randomized data contained in csv files.  The circles indicate agents, and stars indicate the home location of marketing reps.
 
 ![alt text](./map.png)
